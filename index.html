@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GoogIe Pay</title>
+  <style>
+    :root{
+      --bg:#f8fafc;
+      --card:#ffffff;
+      --muted:#64748b;
+      --text:#1e293b;
+      --brand:#2563eb;
+      --chip:#e2e8f0;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:var(--bg);
+      display:flex;
+      justify-content:center;
+      color:#334155;
+    }
+    .container{
+      width:100%;
+      max-width:480px;
+      min-height:100vh;
+      background:var(--bg);
+      padding:10px;
+    }
+
+    /* Top */
+    .topbar{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-top:10px;
+    }
+    .searchbar{
+      flex:1;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background:#fff;
+      border-radius:25px;
+      padding:0 15px;
+      box-shadow:0 1px 3px rgba(0,0,0,.08);
+      font-size:14px;
+      color:#475569;
+      min-height:40px;
+    }
+
+    .searchbar input{
+      border:none;
+      outline:none;
+      flex:1;
+      font-size:14px;
+      color:#475569;
+      background:transparent;
+    }
+    .avatar{
+      width:36px;height:36px;border-radius:50%;
+      background:#ddd;flex-shrink:0;
+    }
+
+    /* Banner */
+    .banner{
+      margin-top:15px;
+      background:url('img/loan bg 1.jpg');
+      border-radius:15px;
+      background-size: 100%;
+      padding:45px;
+      display:flex;justify-content:space-between;align-items:center;
+    }
+    .banner button{
+      margin-top:8px;padding:6px 14px;border:none;border-radius:18px;
+      background:var(--brand);color:#fff;font-size:13px;cursor:pointer;
+    }
+
+    /* Quick actions */
+    .quick-actions{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(80px,1fr));
+      gap:10px;margin-top:15px;text-align:center;
+    }
+    .quick-actions .item{
+      display:flex;flex-direction:column;align-items:center;font-size:12px;
+    }
+    .icon{
+      width:50px;height:50px;border-radius:15px;background:#d4e4fc;
+      display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:6px;
+    }
+
+    /* UPI strip */
+    .upi-section{
+      margin-top:15px;
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      scrollbar-width: none; /* Firefox */
+    }
+    .upi-section::-webkit-scrollbar {
+      display: none; /* Chrome/Safari/Webkit */
+    }
+   .chip{
+      background:#fff;border-radius:12px;padding:10px 15px;
+      justify-content:space-between;align-items:center;font-size:14px;margin-bottom:10px;gap:10px;
+      flex: 0 0 auto;
+      width: 90%; /* Make chips take full width when not scrollable */
+    }
+    .chip.dashed{border:2px dashed #cbd5e1}
+    .chip .btn{
+      border:none;background:var(--chip);padding:6px 12px;border-radius:18px;font-size:12px;cursor:pointer;
+    }
+    /* People */
+    .people{margin-top:20px}
+    .people h3{margin:0 0 10px;font-size:14px;font-weight:700}
+    .people-list{display:flex;gap:15px;overflow-x:auto}
+    .people-list::-webkit-scrollbar{display:none}
+    .person{display:flex;flex-direction:column;align-items:center;font-size:12px}
+    .person .avatar{width:48px;height:48px;margin-bottom:5px}
+
+    /* Generic section */
+    .section{margin-top:25px}
+    .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .section-header h3{margin:0;font-size:22px;line-height:1.2;color:#0f172a;font-weight:700}
+    .section-header a{font-size:13px;color:var(--brand);text-decoration:none}
+    .subtext{font-size:12px;color:var(--muted);margin-bottom:15px}
+
+    /* Bills grid */
+    .grid-icons{display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:18px;text-align:center}
+    .grid-icons .cell{display:flex;flex-direction:column;align-items:center;font-size:14px}
+    .grid-icons .circle{
+      width:64px;height:64px;border-radius:50%;background:#e2e8f0;
+      display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:8px;
+    }
+
+    /* Businesses carousel */
+    .business-list{display:flex;gap:15px;overflow-x:auto}
+    .business-list::-webkit-scrollbar{display:none}
+    .business-item{min-width:74px;display:flex;flex-direction:column;align-items:center;font-size:12px}
+    .business-logo{width:56px;height:56px;border-radius:50%;background:#ddd;margin-bottom:6px}
+
+    /* Cards */
+    .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:10px}
+    .card{background:#fff;border-radius:12px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);font-size:13px}
+    .card h4{margin:6px 0;font-size:15px;color:#0f172a}
+    .card p{margin:0;font-size:12px;color:var(--muted)}
+
+    /* Offers & rewards (colored circles) */
+    .offers-wrap{margin-top:25px}
+    .offer-circles{display:flex;gap:18px;overflow-x:auto}
+    .offer-circles::-webkit-scrollbar{display:none}
+    .round{min-width:72px;text-align:center}
+    .round .pill{
+      width:60px;height:60px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;margin:0 auto 6px;
+      font-size:20px;
+    }
+    .c1{background:linear-gradient(135deg,#f59e0b,#d97706)}
+    .c2{background:linear-gradient(135deg,#ef4444,#b91c1c)}
+    .c3{background:linear-gradient(135deg,#3b82f6,#1d4ed8)}
+    .c4{background:linear-gradient(135deg,#0ea5e9,#0369a1)}
+
+    /* Invite / referral card */
+    .referral-card{
+      margin-top:14px;background:#eef4ff;border-radius:14px;padding:14px;
+      display:flex;justify-content:space-between;align-items:center;gap:12px
+    }
+    .referral-card strong{font-size:16px;color:#0f172a}
+    .referral-cta{color:var(--brand);font-weight:700;text-decoration:none;margin-top:6px;display:inline-block}
+
+    /* Manage your money list */
+    .money{margin-top:24px}
+    .money-list{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+    .money-item{
+      display:flex;justify-content:space-between;align-items:center;gap:12px;
+      padding:14px 12px;border-bottom:1px solid #eef2f7;font-size:14px
+    }
+    .money-item:last-child{border-bottom:none}
+    .money-item .title{font-weight:700;color:#0f172a}
+    .money-item small{display:block;color:var(--muted);font-size:12px;font-weight:400}
+    .money-item .link{color:var(--brand);font-weight:700;text-decoration:none;font-size:13px}
+    .chev{font-size:18px;opacity:.45}
+
+    /* Tiny footer hill (purely visual placeholder) */
+    .hill{
+      margin:26px auto 8px;height:56px;border-radius:24px/56px;
+      background:linear-gradient(0deg,#eaf2ff,#f6f9ff 60%, transparent 60%);
+      max-width:440px;
+    }
+  </style>
+</head>
+<body>
+   <div class="container">
+    <!-- Top -->
+ <div style="background:#f1f6fc;">
+    <div class="topbar">
+      <div class="searchbar">
+            <img src="img/search icon.png" style="width:30px;" alt="🔍"></img>
+        <input type="text" placeholder="Pay friends and merchants" />
+      </div>
+      <div class="avatar"><img src="img/me.jpg" style="width:100%; height:100%; border-radius:100%;"></img></div>
+    </div>
+
+
+    <!-- Banner -->
+    <div class="banner">
+      <div>
+        <div style="font-weight:700;color:#0f172a; margin-top:30px;">Instant loans up to ₹10 lakh</div>
+        <button>Apply now</button>
+      </div>
+    </div>
+</div>
+
+    <!-- Quick actions -->
+    <div class="quick-actions">
+      <div class="item">
+        <button onclick="document.getElementById('qrscan').style.display = 'block'; " style="border:none; padding:0px; background: transparent;"><div class="icon"><img src="img/qr.png" style="width:100%; border-radius:15px;" alt="📷"></img></div></button>
+        <span>Scan any<br/>QR code</span>
+      </div>
+      <div class="item">
+        <div class="icon"><img src="img/pay anyone.png" style="width:100%; border-radius:15px;" alt="💸"></img></div>
+        <span>Pay<br/>anyone</span>
+      </div>
+      <div class="item">
+        <div class="icon"><img src="img/bank transfer.png" style="width:100%; border-radius:15px;" alt="🏦"></img></div>
+        <span>Bank<br/>transfer</span>
+      </div>
+      <div class="item">
+        <div class="icon"><img src="img/mobile recharge.png" style="width:100%; border-radius:15px;" alt="🔋"></img></div>
+        <span>Mobile<br/>recharge</span>
+      </div>
+    </div>
+
+    <!-- UPI -->
+<div style=" ">
+    <div class="upi-section">
+      <div class="chip dashed" style="height:58px; width: 60%;"><img src="img/upi lite.png" style="width:32px;" alt="+"></img><p style="margin: -26px 35px;">Activate UPI Lite</p></div>
+      <div class="chip" style=" height:58px; width:270px; background:#f0efef; ">
+        <div>
+          <div style="font-size:10px;text-transform:uppercase;color:var(--muted)">UPI ID</div>
+          <div style="font-weight:600">teerthsingh9509@okhdfcbank</div>
+        </div>
+      </div>
+    </div>
+</div>
+
+    <!-- People -->
+    <div class="people">
+      <h3>People</h3>
+      <div class="people-list">
+        <div class="person"><div class="avatar" style="background:blueviolet; color:#ede8e8; font-size:28px; align-content:center; text-align:center;">P</div><span>Papa</span></div>
+        <div class="person"><div class="avatar" style="background:darkslateblue; color:#ede8e8; font-size:28px; align-content:center; text-align:center;">M</div><span>Maa</span></div>
+        <div class="person"><div class="avatar" style="background:maroon; color:#ede8e8; font-size:28px; align-content:center; text-align:center;">D</div><span>Dadu</span></div>
+        <div class="person"><div class="avatar" style="background:darkgreen;  color:#ede8e8; font-size:28px; align-content:center; text-align:center;">S</div><span>Shivam</span></div>
+      </div>
+    </div>
+
+    <!-- Bills & recharges -->
+    <div class="section">
+      <div class="section-header">
+        <h3>Bills & recharges</h3>
+        <a href="#">Manage ➔</a>
+      </div>
+      <div class="subtext">Get reminders and pay on time</div>
+      <div class="grid-icons">
+        <div class="cell"><div class="circle"><img src="img/recharge.png" style="width:100%;height:100%; border-radius:100%;" alt="🔋"></img></div><span>Mobile<br/>recharge</span></div>
+        <div class="cell"><div class="circle"><img src="img/electricity.png" style="width:100%;height:100%; border-radius:100%;" alt="💡"></img></div><span>Electricity</span></div>
+        <div class="cell"><div class="circle"><img src="img/dth.png" style="width:100%;height:100%; border-radius:100%;" alt="📺"></img></div><span>DTH / Cable TV</span></div>
+        <div class="cell"><div class="circle"><img src="img/emi.png" style="width:100%; height:100%; border-radius:100%;" alt="💰"></img></div><span>Loan EMI</span></div>
+        <div class="cell"><div class="circle"><img src="img/fastag.png" style="width:100%;height:100%; border-radius:100%;" alt="🚘"></img></div><span>FASTag recharge</span></div>
+        <div class="cell"><div class="circle"><img src="img/credit card.png" style="width:100%;height:100%; border-radius:100%;" alt="💳"></img></div><span>Credit cards</span></div>
+        <div class="cell"><div class="circle"><img src="img/postpaid.png" style="width:100%; height:100%; border-radius:100%;" alt="📱"></img></div><span>Postpaid mobile</span></div>
+        <div class="cell"><div class="circle"><img src="img/google play.png" style="width:100%; height:100%; border-radius:100%;" alt="▶️"></img></div><span>Google Play</span></div>
+      </div>
+    </div>
+
+    <!-- Businesses -->
+    <div class="section">
+      <div class="section-header">
+        <h3>Businesses</h3>
+        <a href="#">Explore ➔</a>
+      </div>
+      <div class="business-list">
+        <div class="business-item"><div class="business-logo" style="background:dodgerblue; color:white; font-size:28px; align-content:center; text-align:center; border:2px dashed #cbd5e1;">S</div><span>SEVEN SP...</span></div>
+        <div class="business-item"><div class="business-logo"><img src="img/fibe.png" style="width:100%; height:100%; border-radius:100%; border:2px dashed #cbd5e1;"></img></div><span>Fibe Loans</span></div>
+        <div class="business-item"><div class="business-logo"><img src="img/payme.png" style="width:100%; height:100%; border-radius:100%; border:2px dashed #cbd5e1;"></img></div><span>PayMe</span></div>
+        <div class="business-item"><div class="business-logo"><img src="img/redbus.jpg" style="width:100%; height:100%; border-radius:100%; border:2px dashed #cbd5e1;"></img></div><span>REDBUS In...</span></div>
+      </div>
+    </div>
+
+    <!-- Gift cards -->
+    <div class="section">
+      <div class="section-header"><h3>Gift cards & more</h3></div>
+      <div class="card-grid">
+        <div class="card">
+          <div style="font-size:22px">🎬</div>
+          <h4>Subscriptions</h4>
+          <p>Buy plans from leading OTT platforms</p>
+        </div>
+        <div class="card">
+          <div style="font-size:22px">🎁</div>
+          <h4>Gift cards</h4>
+          <p>Buy gift cards from the biggest brands</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Offers & rewards -->
+    <div class="offers-wrap">
+      <div class="section-header"><h3>Offers & rewards</h3></div>
+      <div class="offer-circles">
+        <div class="round"><div class="pill c1"><img src="img/rewards.png" style="width:100%;height:100%; border-radius:100%;" alt="🏆"></img></div><div>Rewards</div></div>
+        <div class="round"><div class="pill c2"><img src="img/offers.png" style="width:100%; height:100%; border-radius:100%;" alt="🏷️"></img></div><div>Offers</div></div>
+        <div class="round"><div class="pill c3"><img src="img/refferal.png" style="width:100%; height:100%; border-radius:100%;" alt="👥"></img></div><div>Referrals</div></div>
+        <div class="round"><div class="pill c4"><img src="img/Rupay.png" style="width:100%; height:100%; border-radius:100%;" alt="🛍️"></img></div><div>RuPay Shop</div></div>
+      </div>
+
+      <!-- Invite friends card -->
+      <div class="referral-card" style="background:url('img/personal loan.png');">
+        <div>
+          <div>Invite friends to get <strong>₹201</strong></div>
+          <div style="color:var(--muted);font-size:13px">Referral code: <code>6t4j27t</code></div>
+          <a class="referral-cta" href="#">Invite & earn</a>
+        </div>
+        <div style="width:70px;height:56px;background:#dbeafe;border-radius:10px;"></div>
+      </div>
+    </div>
+
+    <!-- Manage your money -->
+    <div class="money">
+      <div class="section-header"><h3>Manage your money</h3></div>
+      <div class="money-list">
+        <div class="money-item">
+          <div>
+            <div class="title"><img src="img/personal loan.png" style="width:35px;position:relative; margin: -20px auto; border-radius:15px;"></img>Personal loan</div>
+            <small style="margin-left:35px;">Up to ₹10 lakh, instant approval</small>
+          </div>
+          <a class="link" href="#">Apply now</a>
+        </div>
+        <div class="money-item">
+          <div class="title"><img src="img/cibil.png" style="width:35px;position:relative; margin: -12px auto; border-radius:15px;"></img>Check your CIBIL score for free</div>
+          <span class="chev">›</span>
+        </div>
+        <div class="money-item">
+          <div class="title"><img src="img/transaction.png" style="width:35px;position:relative; margin: -12px auto; border-radius:15px;"></img>See transaction history</div>
+          <span class="chev">›</span>
+        </div>
+        <div class="money-item">
+          <div class="title"><img src="img/bank transfer.png" style="width:35px;position:relative; margin: -12px auto; border-radius:15px;"></img>Check bank balance</div>
+          <span class="chev">›</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hill"></div>
+  </div>
+
+<iframe id="qrscan" srcdoc='
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Scanner</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: black;
+      color: white;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #camera {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+    }
+    .top-bar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      z-index: 2;
+    }
+    .top-bar button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 22px;
+      cursor: pointer;
+    }
+    .top-icons {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+    .top-icons img {
+      width: 35px; height: 35px;
+      object-fit: contain;
+      cursor: pointer;
+    }
+    .scanner-frame {
+      position: relative;
+      width: 70vw;
+      max-width: 300px;
+      aspect-ratio: 1 / 1;
+      z-index: 1;
+    }
+    .corner { position: absolute; width: 20%; height: 20%; border: 3px solid transparent; }
+    .corner.tl { top: 0; left: 0; border-top: 4px solid red; border-left: 4px solid red; border-top-left-radius: 42%; }
+    .corner.tr { top: 0; right: 0; border-top: 4px solid orange; border-right: 4px solid orange; border-top-right-radius: 42%; }
+    .corner.bl { bottom: 0; left: 0; border-bottom: 4px solid blue; border-left: 4px solid blue; border-bottom-left-radius: 42%; }
+    .corner.br { bottom: 0; right: 0; border-bottom: 4px solid green; border-right: 4px solid green; border-bottom-right-radius: 42%; }
+    .upload-btn {
+      margin-top: 20px;
+      background: white;
+      color: black;
+      padding: 12px 20px;
+      border-radius: 25px;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      z-index: 2;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+    .upload-btn img { width: 22px; height: 22px; object-fit: contain; }
+    .upload-btn input { display: none; }
+    .bottom-sheet {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(0,0,0,0.8);
+      padding: 18px 10px;
+      text-align: center;
+      font-size: 16px;
+      z-index: 2;
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
+    }
+    .bottom-sheet .apps { font-size: 14px; color: #ccc; }
+    .scanner-container { display: flex; flex-direction: column; align-items: center; z-index: 1; }
+  </style>
+</head>
+<body>
+
+  <video id="camera" autoplay playsinline></video>
+
+  <div class="top-bar">
+    <button id="closeBtn">✕</button>
+    <div class="top-icons">
+      <img id="flashBtn" src="img/flash.png" alt="Flashlight">
+      <img src="img/qr2.png" alt="QR icon">
+      <span style="font-size:22px;">⋮</span>
+    </div>
+  </div>
+
+  <div class="scanner-container">
+    <div class="scanner-frame">
+      <div class="corner tl"></div>
+      <div class="corner tr"></div>
+      <div class="corner bl"></div>
+      <div class="corner br"></div>
+    </div>
+    <label class="upload-btn">
+      <img src="img/upload.png" alt="Upload icon">
+      <span>Upload from gallery</span>
+      <input id="uploadInput" type="file" accept="image/*">
+    </label>
+  </div>
+
+  <div class="bottom-sheet">
+    <p>Scan any QR code to pay</p>
+    <p class="apps">Google Pay • PhonePe • PayTM • UPI</p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <script>
+    const video = document.getElementById("camera");
+    let stream = null;
+    let flashOn = false;
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    // ✅ Start camera (with mobile-friendly config)
+    async function startCamera() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: "environment" }, // fallback-friendly
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          }
+        });
+        video.srcObject = stream;
+        video.addEventListener("playing", scanQRCode);
+      } catch (err) {
+        console.error("Camera access denied:", err);
+        alert("Unable to access camera. Please use HTTPS and allow camera permissions.");
+      }
+    }
+    startCamera();
+
+    // ✅ QR scan loop
+    function scanQRCode() {
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+        if (code) {
+          alert("QR Code detected: " + code.data);
+          stopCamera();
+          window.parent.document.getElementById("qrscan").style.display = "none";
+          return;
+        }
+      }
+      requestAnimationFrame(scanQRCode);
+    }
+
+    // ✅ Upload from gallery
+    document.getElementById("uploadInput").addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const img = new Image();
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+        if (code) {
+          alert("QR Code from image: " + code.data);
+          window.parent.document.getElementById("qrscan").style.display = "none";
+        } else {
+          alert("No QR code found in the uploaded image.");
+        }
+      };
+      img.src = URL.createObjectURL(file);
+    });
+
+    // ✅ Flashlight toggle
+    document.getElementById("flashBtn").onclick = async () => {
+      if (!stream) return alert("Camera not ready");
+      const track = stream.getVideoTracks()[0];
+      const capabilities = track.getCapabilities();
+      if (!capabilities.torch) {
+        alert("Flashlight not supported on this device/browser.");
+        return;
+      }
+      flashOn = !flashOn;
+      try {
+        await track.applyConstraints({ advanced: [{ torch: flashOn }] });
+      } catch (err) {
+        console.error("Torch error:", err);
+        alert("Failed to toggle flashlight.");
+      }
+    };
+
+    // ✅ Close button
+    document.getElementById("closeBtn").onclick = () => {
+      stopCamera();
+      window.parent.document.getElementById("qrscan").style.display = "none";
+    };
+
+    function stopCamera() {
+      if (stream) stream.getTracks().forEach(track => track.stop());
+    }
+  </script>
+</body>
+</html>
+'
+style="display:none; position:absolute; inset:0; width:100%; height:100%; border:none; z-index:9999;"
+allow="camera">
+</iframe>
+
+</body>
+</html>
