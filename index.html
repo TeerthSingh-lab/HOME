@@ -469,6 +469,20 @@
       object-fit: contain;
     }
 
+#flashimg{
+width: 35px;
+height: 35px;
+object-fit: contain;
+cursor: pointer;
+}
+
+#switchimg{
+width: 35px;
+height: 35px;
+object-fit: contain;
+cursor: pointer;
+}
+
   /* bottom sheet */
   .bottom-sheet{
     position:absolute; left:0; right:0; bottom:10px;
@@ -515,8 +529,8 @@
       </div>
 
       <div class="right-controls">
-        <div class="btn" id="flashBtn" title="Toggle flashlight"><Img id="flashBtn" src="Img/flash.png" alt="Flashlight" style="background: none; border: none; color: white; font-size: 22px; display: flex;gap: 14px; align-items: center; width: 35px; height: 35px; object-fit: contain; cursor: pointer;"></Img></div>
-        <div class="btn" id="switchBtn" title="Switch camera"><Img src="Img/qr2.png" alt="QR icon" style="background: none; border: none; color: white; font-size: 22px; display: flex;gap: 14px; align-items: center; width: 35px; height: 35px; object-fit: contain; cursor: pointer;"></Img></div>
+        <div class="btn" id="flashBtn" title="Toggle flashlight"><Img id="flashimg" src="Img/flash.png" alt="Flashlight" ></Img></div>
+        <div class="btn" id="switchBtn" title="Switch camera"><Img id="switchimg" src="Img/qr2.png" alt="QR icon" ></Img></div>
         <div class="btn" id="menuBtn" title="More">⋮</div>
       </div>
     </div>
@@ -706,7 +720,8 @@
     // toggle choice and start camera with new facing
     currentFacing = currentFacing === "environment" ? "user" : "environment";
     // small UI feedback
-    switchBtn.textContent = currentFacing === "environment" ? "🔁" : "🔁";
+switchBtn.innerHTML = "<img src=\"Img/qr2.png\" alt=\"QR icon\" id=\"switchimg\">";
+
     await startCamera(currentFacing);
   });
 
@@ -769,4 +784,5 @@ allow="camera">
 
 </body>
 </html>
+
 
