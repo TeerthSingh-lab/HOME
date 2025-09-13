@@ -463,6 +463,12 @@
     font-size:15px; cursor:pointer;
   }
 
+    .upload-btn Img {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+    }
+
   /* bottom sheet */
   .bottom-sheet{
     position:absolute; left:0; right:0; bottom:10px;
@@ -509,14 +515,14 @@
       </div>
 
       <div class="right-controls">
-        <div class="btn" id="flashBtn" title="Toggle flashlight">🔦</div>
-        <div class="btn" id="switchBtn" title="Switch camera">🔁</div>
+        <div class="btn" id="flashBtn" title="Toggle flashlight"><Img id="flashBtn" src="Img/flash.png" alt="Flashlight" style="background: none; border: none; color: white; font-size: 22px; display: flex;gap: 14px; align-items: center; width: 35px; height: 35px; object-fit: contain; cursor: pointer;"></Img></div>
+        <div class="btn" id="switchBtn" title="Switch camera"><Img src="Img/qr2.png" alt="QR icon" style="background: none; border: none; color: white; font-size: 22px; display: flex;gap: 14px; align-items: center; width: 35px; height: 35px; object-fit: contain; cursor: pointer;"></Img></div>
         <div class="btn" id="menuBtn" title="More">⋮</div>
       </div>
     </div>
 
     <!-- Upload -->
-    <label class="upload-btn" id="uploadBtn">🖼 Upload from gallery
+    <label class="upload-btn" id="uploadBtn"><Img src="Img/upload.png" alt="Upload icon"></Img><span>Upload from gallery</span>
       <input id="fileInput" type="file" accept="image/*" style="display:none">
     </label>
 
@@ -549,6 +555,10 @@
   let scanning = false;
   // current facing mode: "environment" (rear) or "user" (front)
   let currentFacing = "environment";
+
+  // --- NEW: region of the frame in video-pixel coordinates ---
+  // { sx, sy, sw, sh } or null if not available
+  let frameRegion = null;
 
   // --- helpers ---
   function stopCamera() {
@@ -588,7 +598,7 @@
     }
   }
 
-  // maps the frame DOM rect into the SVG viewBox coordinates
+  // maps the frame DOM rect into the SVG viewBox coordinates AND into video pixel coords
   function updateMask(){
     const rect = frame.getBoundingClientRect();
     const svgRect = overlaySvg.getBoundingClientRect();
@@ -607,6 +617,30 @@
     // scale corner size variable
     const cornerSize = Math.max(36, Math.round(rect.width * 0.14));
     frame.style.setProperty("--corner-size", cornerSize + "px");
+
+    // --- NEW: compute the frame region in video pixel coordinates ---
+    // need video bounding rect + video.videoWidth/video.videoHeight
+    const videoRect = video.getBoundingClientRect();
+    const vW = video.videoWidth || 0;
+    const vH = video.videoHeight || 0;
+
+    if (vW > 0 && vH > 0 && videoRect.width > 0 && videoRect.height > 0) {
+      // position of frame relative to video element
+      const relLeft = (rect.left - videoRect.left) / videoRect.width;
+      const relTop  = (rect.top  - videoRect.top)  / videoRect.height;
+      const relW    = rect.width  / videoRect.width;
+      const relH    = rect.height / videoRect.height;
+
+      // convert to video pixels (clamped & integer)
+      const sx = Math.max(0, Math.floor(relLeft * vW));
+      const sy = Math.max(0, Math.floor(relTop  * vH));
+      const sw = Math.max(1, Math.floor(relW * vW));
+      const sh = Math.max(1, Math.floor(relH * vH));
+
+      frameRegion = { sx, sy, sw, sh };
+    } else {
+      frameRegion = null;
+    }
   }
 
   // scanning loop
@@ -619,18 +653,33 @@
   function scanLoop(){
     if (!scanning) return;
     if (video.readyState === video.HAVE_ENOUGH_DATA){
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const ImgData = ctx.getImageData(0,0,canvas.width,canvas.height);
-      const code = jsQR(ImgData.data, ImgData.width, ImgData.height, { inversionAttempts: "dontInvert" });
-      if (code){
-        scanning = false;
-        // stop camera tracks
-        if (stream) stream.getTracks().forEach(t => t.stop());
-        // result action (you can replace with open/copy behavior)
-        alert("QR Code detected:\n" + code.data);
-        return;
+      // If we have a computed frameRegion (video metadata + layout ready), only scan that area.
+      if (frameRegion && frameRegion.sw > 0 && frameRegion.sh > 0) {
+        // set canvas to region size
+        canvas.width = frameRegion.sw;
+        canvas.height = frameRegion.sh;
+        // draw only the region from video into canvas
+        try {
+          ctx.drawImage(video,
+                        frameRegion.sx, frameRegion.sy, frameRegion.sw, frameRegion.sh, // source rect
+                        0, 0, canvas.width, canvas.height);                             // dest rect
+          const ImgData = ctx.getImageData(0,0,canvas.width,canvas.height);
+          const code = jsQR(ImgData.data, ImgData.width, ImgData.height, { inversionAttempts: "dontInvert" });
+          if (code){
+            scanning = false;
+            // stop camera tracks
+            if (stream) stream.getTracks().forEach(t => t.stop());
+            // result action (you can replace with open/copy behavior)
+            alert("QR Code detected:\n" + code.data);
+            return;
+          }
+        } catch (err) {
+          // in the rare case getImageData or drawImage fails, log and skip this frame
+          console.error("scan draw/getImageData error", err);
+        }
+      } else {
+        // fallback: if region not ready yet, don"t attempt a full-frame scan (avoids false positives).
+        // We simply skip scanning until frameRegion becomes available via updateMask.
       }
     }
     requestAnimationFrame(scanLoop);
@@ -720,3 +769,4 @@ allow="camera">
 
 </body>
 </html>
+
