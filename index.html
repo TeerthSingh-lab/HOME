@@ -67,7 +67,7 @@
     /* Banner */
     .banner{
       margin-top:15px;
-      background:url("Img/loan bg 1.jpg");
+      background:url('Img/loan bg 1.jpg');
       border-radius:15px;
       background-size: 100%;
       padding:45px;
@@ -319,7 +319,7 @@
       </div>
 
       <!-- Invite friends card -->
-      <div class="referral-card" style="background:url("Img/personal loan.png");">
+      <div class="referral-card" style="background:url('Img/personal loan.png');">
         <div>
           <div>Invite friends to get <strong>₹201</strong></div>
           <div style="color:var(--muted);font-size:13px">Referral code: <code>6t4j27t</code></div>
@@ -495,17 +495,6 @@ cursor: pointer;
   @media (max-width:420px){
     .scanner-frame{ width:74vw; }
   }
-
-  /* iframe (success overlay) style when added dynamically */
-  .success-iframe {
-    position:fixed;
-    inset:0;
-    width:100%;
-    height:100%;
-    border:0;
-    z-index:99999;
-    background:#fff;
-  }
 </style>
 </head>
 <body>
@@ -584,118 +573,6 @@ cursor: pointer;
   // --- NEW: region of the frame in video-pixel coordinates ---
   // { sx, sy, sw, sh } or null if not available
   let frameRegion = null;
-
-  /* ------------------------------------------------------------------
-     showSuccess(name, upi, phone, amount)
-     - Minimal, self-contained: creates a full-screen iframe with the
-       same success UI you supplied. Calls parent.closeSuccess() when
-       Done is clicked (closeSuccess will remove iframe and restart camera).
-     ------------------------------------------------------------------ */
-  function showSuccess(name, upi, phone, amount) {
-    // stop camera tracks if running
-    try { if (stream) stream.getTracks().forEach(t => t.stop()); } catch(e){}
-
-    const now = new Date();
-    const options = { day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit" };
-    const ts = now.toLocaleDateString("en-IN", options);
-
-    // sanitize and format amount
-    const amtNumber = parseFloat(amount || 0);
-    const amtText = "₹" + (isNaN(amtNumber) ? "0.00" : amtNumber.toFixed(2));
-    const escapedName = String(name || "Unknown").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-    const escapedUpi = String(upi || "unknown@upi").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-    const escapedPhone = String(phone || "").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-
-    // success HTML (keeps visual identical to your success.html)
-    const successHtml = `
-<!doctype html>
-<html>
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Payment Success</title>
-<style>
-  body { margin:0; font-family: sans-serif; background:#fff; text-align:center; color:#1e293b; }
-  .container { padding:40px 20px; }
-  .check { width:80px; height:80px; border-radius:50%; background:#0061f2; display:flex; align-items:center; justify-content:center; margin:40px auto 20px; }
-  .check svg { width:40px; height:40px; color:#fff; }
-  .amount { font-size:32px; font-weight:bold; margin-top:10px; }
-  .paid-to { margin-top:20px; font-size:16px; font-weight:500; }
-  .banking-name { font-size:14px; color:#64748b; margin-top:6px; }
-  .timestamp { font-size:13px; color:#64748b; margin-top:6px; }
-  .btn-row { display:flex; justify-content:center; gap:16px; margin-top:40px; }
-  .btn { padding:10px 18px; border-radius:20px; font-size:14px; font-weight:500; cursor:pointer; }
-  .btn.share { border:1px solid #cbd5e1; background:#fff; color:#1e293b; }
-  .btn.done { background:#0061f2; color:#fff; }
-  .upi-logo { margin-top:30px; font-size:12px; color:#64748b; }
-  .meta { font-size:13px; color:#64748b; margin-top:8px; }
-</style>
-</head>
-<body>
-  <div class="container">
-    <div class="check">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-      </svg>
-    </div>
-
-    <div class="amount" id="amountText">${amtText}</div>
-    <div class="paid-to" id="paidTo">Paid to ${escapedName}</div>
-    <div class="banking-name" id="upiText">Banking name: ${escapedUpi}</div>
-    <div class="meta">${escapedPhone ? escapedPhone + " • " : ""}${ts}</div>
-
-    <div class="btn-row">
-      <div class="btn share" id="shareBtn">Share screenshot</div>
-      <div class="btn done" id="doneBtn">Done</div>
-    </div>
-
-    <div class="upi-logo">Powered by UPI</div>
-  </div>
-
-<script>
-  // share fallback
-  document.getElementById("shareBtn").addEventListener("click", function(){
-    if (navigator.share) {
-      navigator.share({ title: "Payment", text: document.getElementById("amountText").innerText + " - " + document.getElementById("paidTo").innerText })
-        .catch(()=>{ alert("Share cancelled or not supported"); });
-    } else {
-      alert("Share not supported on this device/browser.");
-    }
-  });
-
-  // Done calls parent to close
-  document.getElementById("doneBtn").addEventListener("click", function(){
-    try { window.parent.closeSuccess(); } catch(e){ /* ignored */ }
-  });
-<\/script>
-</body>
-</html>
-`;
-
-    // create iframe if not present
-    let iframe = document.getElementById("successIframe");
-    if (!iframe) {
-      iframe = document.createElement("iframe");
-      iframe.id = "successIframe";
-      iframe.className = "success-iframe";
-      iframe.setAttribute("aria-label", "Payment success view");
-      document.body.appendChild(iframe);
-    }
-    iframe.srcdoc = successHtml;
-    iframe.style.display = "block";
-  }
-
-  // closeSuccess: remove iframe and restart camera
-  window.closeSuccess = function(){
-    try {
-      const ifr = document.getElementById("successIframe");
-      if (ifr) { ifr.remove(); }
-    } catch(e){}
-    // restart camera & scanning
-    setTimeout(()=> {
-      try { startCamera(currentFacing); } catch(e){ console.error(e); }
-    }, 200);
-  };
 
   // --- helpers ---
   function stopCamera() {
@@ -802,34 +679,14 @@ cursor: pointer;
                         0, 0, canvas.width, canvas.height);                             // dest rect
           const ImgData = ctx.getImageData(0,0,canvas.width,canvas.height);
           const code = jsQR(ImgData.data, ImgData.width, ImgData.height, { inversionAttempts: "dontInvert" });
-          
-if (code) {
-  scanning = false;
-
-  // ✅ Extract QR text
-  const qrText = code.data;
-
-  // ✅ Example parsing logic (adjust as needed)
-  // Try to extract UPI ID (looks like xxxx@bank)
-  const upiMatch = qrText.match(/[\w.-]+@[\w.-]+/);
-  const upi = upiMatch ? upiMatch[0] : "unknown@upi";
-
-  // Try to extract name (assume "pn=" or similar in QR text, fallback default)
-  const nameMatch = qrText.match(/pn=([^&]*)/);
-  const name = nameMatch ? decodeURIComponent(nameMatch[1]) : "Unknown User";
-
-  // Try to extract phone (if exists, else blank)
-  const phoneMatch = qrText.match(/(\+91\d{10}|\d{10})/);
-  const phone = phoneMatch ? phoneMatch[0] : "";
-
-  // ✅ Ask user for amount
-  const amount = prompt("Enter amount:") || 0;
-
-  // ✅ Show success screen in iframe (instead of redirect)
-  showSuccess(name, upi, phone, amount);
-  return;
-}
-
+          if (code){
+            scanning = false;
+            // stop camera tracks
+            if (stream) stream.getTracks().forEach(t => t.stop());
+            // result action (you can replace with open/copy behavior)
+            alert("QR Code detected:\n" + code.data);
+            return;
+          }
         } catch (err) {
           // in the rare case getImageData or drawImage fails, log and skip this frame
           console.error("scan draw/getImageData error", err);
@@ -927,5 +784,7 @@ allow="camera">
 
 </body>
 </html>
+
+
 
 
